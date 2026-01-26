@@ -1,21 +1,28 @@
 import { FC, useState } from 'react'
 import { useAccount } from 'wagmi'
-import { hashTypedData } from 'viem'
 import { useSigningStore } from '../stores/signingStore'
 import { useEIP712Signing } from '../hooks/useEIP712Signing'
 import { useWalletInfo } from '../hooks/useWalletInfo'
 import { createTestMessage, formatMessageForDisplay } from '../utils/eip712'
 import { verifySignature } from '../utils/verification'
 import { toast } from 'sonner'
+import { useSafePolling } from '../hooks/useSafePolling'
 
 export const SigningForm: FC = () => {
   const { address, chainId, isConnected } = useAccount()
-  const { isSafe, signingInProgress, messageHash } = useSigningStore()
+  const { isSafe, signingInProgress, messageHash, setMessageHash, setSigningInProgress } = useSigningStore()
   const { signMessage } = useEIP712Signing()
   const { isChecking } = useWalletInfo()
   const [customMessage, setCustomMessage] = useState('')
   const [signature, setSignature] = useState<string>('')
   const [showMessage, setShowMessage] = useState(false)
+  useSafePolling()
+
+  const resetSigningState = () => {
+    setSigningInProgress(false)
+    setMessageHash(null)
+    setSignature('')
+  }
 
   if (!isConnected) {
     return (
@@ -44,28 +51,20 @@ export const SigningForm: FC = () => {
       ? { content: customMessage, timestamp: Math.floor(Date.now() / 1000) }
       : undefined
 
-    const sig = await signMessage(messageToSign)
-    if (sig) {
-      setSignature(sig)
+    // this is not the sig when we are signing with safe, just a placeholder
+    const {signature, messageHash} = await signMessage(messageToSign)
+    if (!isSafe && signature) {
+      setSignature(signature)
       
-      // Compute message hash for verification
-      const message = chainId ? createTestMessage(chainId) : null
-      if (!message || !address) {
-        toast.error('Error: Missing message or address')
+      if (!messageHash || !address) {
+        toast.error('Error: Missing messageHash or address')
         return
       }
-
-      const messageHash = hashTypedData({
-        domain: message.domain,
-        types: message.types,
-        primaryType: message.primaryType,
-        message: message.message,
-      })
-
+      
       // Verify signature
       const isValid = await verifySignature(
         messageHash,
-        sig,
+        signature,
         address,
         isSafe
       )
@@ -136,6 +135,15 @@ export const SigningForm: FC = () => {
       >
         {signingInProgress ? 'Signing...' : 'Sign with EIP712'}
       </button>
+      {signingInProgress && (
+        <button
+            style={{marginTop: 10}}
+            onClick={resetSigningState}
+        >
+            {'reset Signing State'}
+        </button>
+    )}
+     
 
       {signature && (
         <div className="form-group">
