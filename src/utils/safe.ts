@@ -27,7 +27,7 @@ const chainIdMap: Record<number, string> = {
  */
 export const pollSafeSigningStatus = async (
   safeAddress: string,
-  txHash: string,
+  msgHash: string,
   chainId: number,
   maxAttempts: number = 60, // 5 minutes at 5 second intervals
   interval: number = 5000
@@ -43,13 +43,13 @@ export const pollSafeSigningStatus = async (
   if (!chainName) {
     return { isComplete: false, confirmations: 0, threshold: 0, error: 'Unsupported chain' }
   }
-  
-  const serviceUrl = `https://safe-transaction-${chainName}.safe.global/api/v1`
+ // OR  https://api.safe.global/tx-service/celo/api/v1/safes/${safeAddress}/messages
+  const serviceUrl = `https://api.safe.global/tx-service/${chainName}/api/v1`
   
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       const response = await fetch(
-        `${serviceUrl}/safes/${safeAddress}/multisig-transactions/${txHash}/`
+        `${serviceUrl}/messages/${msgHash}/`
       )
       
       if (!response.ok) {
@@ -60,6 +60,7 @@ export const pollSafeSigningStatus = async (
       
       const tx = await response.json()
       const confirmations = tx.confirmations?.length || 0
+    //   TODO use https://docs.safe.global/reference-sdk-protocol-kit/safe-info/getthreshold
       const threshold = tx.confirmationsRequired || 0
       
       if (tx.isExecuted) {
