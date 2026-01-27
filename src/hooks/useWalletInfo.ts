@@ -4,7 +4,7 @@ import { detectSafeWallet } from '../utils/safe'
 import { useEffect, useState } from 'react'
 
 export const useWalletInfo = () => {
-  const { address, isConnected, chain } = useAccount()
+  const { address, isConnected } = useAccount()
   
   const { setIsSafe } = useSigningStore()
   const [isChecking, setIsChecking] = useState(false)

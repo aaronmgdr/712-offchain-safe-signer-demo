@@ -1,4 +1,4 @@
-import {  keccak256, Address } from 'viem'
+import {  Address } from 'viem'
 
 export interface EIP712Domain {
   name: string
@@ -45,20 +45,6 @@ export const createTestMessage = (chainId: number): EIP712Message => {
   }
 }
 
-/**
- * Hash EIP712 message domain
- */
-export const hashDomain = (domain: EIP712Domain): string => {
-  const domainTypeHash = keccak256(
-    Buffer.from(
-      'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)',
-      'utf-8'
-    )
-  )
-  
-  // Simplified domain hashing - in production use ethers.js/viem utilities
-  return domainTypeHash
-}
 
 /**
  * Convert message to JSON for display
