@@ -33,7 +33,7 @@ async function getSafeMessageHashAndThreshold(messageHash: Hash, safeAddress: Ad
 
 export const useSafePolling = () => {
   const { address, chain, chainId } = useAccount()
-  const { signingInProgress, setSigningInProgress, messageHash, setSignature } = useSigningStore()
+  const { signingInProgress, setSigningInProgress, messageHash, setSignature, setSafeMessageHash } = useSigningStore()
   const [isPolling, setIsPolling] = useState(false)
 
 
@@ -45,6 +45,9 @@ export const useSafePolling = () => {
     const toastId = toast.loading(
       `Waiting for SAFE multisig approval... (0 of ${threshold} signatures)`
     )
+
+    setSafeMessageHash(safeMessageHash)
+
     try {
       // Simulate polling - in production, integrate real polling
       let attempts = 0

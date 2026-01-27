@@ -1,5 +1,5 @@
 import { toast } from "sonner"
-import { verifySignature } from "./verification"
+import { verifyERC1271Signature, verifyECDSASignature } from "./verification"
 import { Address, Hash } from "viem"
 
 export async function onReceiveSignature({signature, messageHash, address, isSafe}: {
@@ -13,15 +13,19 @@ export async function onReceiveSignature({signature, messageHash, address, isSaf
         toast.error('Error: Missing messageHash or address')
         return
       }
-      
-      // Verify signature
-      const isValid = await verifySignature(
-        messageHash,
-        signature,
-        address,
-        isSafe
-      )
+      toast.info(`Verifying signature... ${isSafe ? '(SAFE multisig)' : '(EOA)'}`)
 
+      // Verify signature
+      const isValid = isSafe
+        ? await verifyERC1271Signature(address, messageHash, signature)
+        : await verifyECDSASignature(messageHash, signature, address)
+       console.info('Verifying signature with params:', {
+        signature,
+        messageHash,
+        address,
+        isSafe,
+        isValid
+      })
 
 
       if (isValid) {
@@ -35,3 +39,4 @@ export async function onReceiveSignature({signature, messageHash, address, isSaf
       }
 
 }
+

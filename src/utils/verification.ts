@@ -24,21 +24,25 @@ export const verifyERC1271Signature = async (
   signature: string
 ): Promise<boolean> => {
   try {
+    
     // Get SAFE contract instance
     const safeContract = getContract({
       address: safeAddress as `0x${string}`,
       abi: SAFE_ERC1271_ABI,
       client: { public: publicClient },
     })
-
+    console.info('Verifying ERC-1271 signature with params:', { messageHash, signature, safeAddress })
     // Call isValidSignature on SAFE
     const result = await safeContract.read.isValidSignature(
       [messageHash as `0x${string}`, signature as `0x${string}`],
       { account: safeAddress as `0x${string}` }
     )
-
-    // ERC-1271 returns 0x1626ba7e for valid signatures
-    return result === '0x1626ba7e'
+    console.info('ERC-1271 verification result:', result)
+    // ERC-1271 magic values for valid signatures:
+    // 0x1626ba7e - newer standard: isValidSignature(bytes32,bytes)
+    // 0x20c13b0b - current standard: isValidSignature(bytes,bytes)
+    // see https://github.com/ethereum/ERCs/commit/92a81d542e54e6ec907dff81dc5ef8600b86030e
+    return result === '0x1626ba7e' || result === '0x20c13b0b'
   } catch (error) {
     console.error('Error verifying ERC-1271 signature:', error)
     return false
@@ -63,21 +67,5 @@ export const verifyECDSASignature = async (
   } catch (error) {
     console.error('Error verifying ECDSA signature:', error)
     return false
-  }
-}
-
-/**
- * Verify signature based on account type
- */
-export const verifySignature = async (
-  messageHash: string,
-  signature: string,
-  account: string,
-  isSafe: boolean
-): Promise<boolean> => {
-  if (isSafe) {
-    return verifyERC1271Signature(account, messageHash, signature)
-  } else {
-    return verifyECDSASignature(messageHash, signature, account)
   }
 }

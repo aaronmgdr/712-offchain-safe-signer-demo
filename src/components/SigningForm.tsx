@@ -5,10 +5,11 @@ import { useEIP712Signing } from '../hooks/useEIP712Signing'
 import { useWalletInfo } from '../hooks/useWalletInfo'
 import { createTestMessage, formatMessageForDisplay } from '../utils/eip712'
 import { useSafePolling } from '../hooks/useSafePolling'
+import { onReceiveSignature } from '../utils/onReceiveSignature'
 
 export const SigningForm: FC = () => {
   const { address, chainId, isConnected } = useAccount()
-  const { isSafe, signingInProgress, messageHash, setMessageHash, setSigningInProgress, signature, setSignature } = useSigningStore()
+  const { isSafe, signingInProgress, messageHash, safeMessageHash, setMessageHash, setSigningInProgress, signature, setSignature } = useSigningStore()
   const { signMessage } = useEIP712Signing()
   const { isChecking } = useWalletInfo()
   const [customMessage, setCustomMessage] = useState('')
@@ -124,8 +125,15 @@ export const SigningForm: FC = () => {
             value={signature}
             style={{ background: '#f0f8ff' }}
           />
+          <button
+            onClick={() => onReceiveSignature({signature, messageHash: messageHash!, address: address as `0x${string}`, isSafe})}
+            style={{ marginTop: '10px' }}
+          >
+            Verify Signature
+          </button>
           <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
             {messageHash && `Message Hash: ${messageHash}`}
+            {safeMessageHash && `Safe Message Hash: ${safeMessageHash}`}
           </p>
         </div>
       )}
