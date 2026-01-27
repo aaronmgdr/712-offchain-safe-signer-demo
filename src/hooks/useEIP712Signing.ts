@@ -10,7 +10,7 @@ import { hashTypedData } from 'viem'
 export const useEIP712Signing = () => {
   const { address, chainId } = useAccount()
   const { signTypedDataAsync } = useSignTypedData()
-  const { isSafe, setSigningInProgress, setMessageHash } = useSigningStore()
+  const { isSafe, setSigningInProgress, setMessageHash, setSignature } = useSigningStore()
 
 
  
@@ -24,26 +24,27 @@ export const useEIP712Signing = () => {
        
 
       try {
+        setSigningInProgress(true)
         const message = customMessage ? 
           { ...createTestMessage(chainId), message: customMessage as Record<string, string | number | boolean> } :
           createTestMessage(chainId)
-
+      
+        const messageHash = hashTypedData(message)
+        setMessageHash(messageHash)
         if (isSafe) {
           toast.info('🔐 Signing with SAFE multisig... This will take as long as it takes to get all signatures.')
         }
-        const messageHash = hashTypedData(message)
-        setMessageHash(messageHash)
-        console.log("message", message, messageHash)
-        setSigningInProgress(true)
 
-        const signature = await signTypedDataAsync({
+        const signatureIfEOA = await signTypedDataAsync({
           domain: message.domain,
           types: message.types,
           primaryType: message.primaryType,
           message: message.message,
         })
-        console.log("sig", signature)
-        return {signature, messageHash}
+        if (!isSafe) {
+          setSignature(signatureIfEOA)
+          toast.success('✅ Message signed successfully!')
+        }
       } catch (error) {
         if ((error as Error).message.includes('User rejected')) {
           toast.error('Signing cancelled')
@@ -52,7 +53,6 @@ export const useEIP712Signing = () => {
           console.error('Signing error:', error)
         }
         setSigningInProgress(false)
-        return {signature: null, messageHash: null}
       }
     },
     [address, chainId, isSafe, signTypedDataAsync, setSigningInProgress, setMessageHash]

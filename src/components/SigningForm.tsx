@@ -4,24 +4,21 @@ import { useSigningStore } from '../stores/signingStore'
 import { useEIP712Signing } from '../hooks/useEIP712Signing'
 import { useWalletInfo } from '../hooks/useWalletInfo'
 import { createTestMessage, formatMessageForDisplay } from '../utils/eip712'
-import { verifySignature } from '../utils/verification'
-import { toast } from 'sonner'
 import { useSafePolling } from '../hooks/useSafePolling'
 
 export const SigningForm: FC = () => {
   const { address, chainId, isConnected } = useAccount()
-  const { isSafe, signingInProgress, messageHash, setMessageHash, setSigningInProgress } = useSigningStore()
+  const { isSafe, signingInProgress, messageHash, setMessageHash, setSigningInProgress, signature, setSignature } = useSigningStore()
   const { signMessage } = useEIP712Signing()
   const { isChecking } = useWalletInfo()
   const [customMessage, setCustomMessage] = useState('')
-  const [signature, setSignature] = useState<string>('')
   const [showMessage, setShowMessage] = useState(false)
   useSafePolling()
 
   const resetSigningState = () => {
     setSigningInProgress(false)
     setMessageHash(null)
-    setSignature('')
+    setSignature(null)
   }
 
   if (!isConnected) {
@@ -52,33 +49,7 @@ export const SigningForm: FC = () => {
       : undefined
 
     // this is not the sig when we are signing with safe, just a placeholder
-    const {signature, messageHash} = await signMessage(messageToSign)
-    if (!isSafe && signature) {
-      setSignature(signature)
-      
-      if (!messageHash || !address) {
-        toast.error('Error: Missing messageHash or address')
-        return
-      }
-      
-      // Verify signature
-      const isValid = await verifySignature(
-        messageHash,
-        signature,
-        address,
-        isSafe
-      )
-
-      if (isValid) {
-        if (isSafe) {
-          toast.success('✓ SAFE multisig signature verified!')
-        } else {
-          toast.success('✓ EOA signature verified!')
-        }
-      } else {
-        toast.error('✗ Signature verification failed')
-      }
-    }
+    await signMessage(messageToSign)
   }
 
   return (

@@ -1,3 +1,4 @@
+import { Hash } from 'viem'
 import { publicClient } from '../config/viemClient'
 
 /**
@@ -26,12 +27,11 @@ const chainIdMap: Record<number, string> = {
  * Poll SAFE Transaction Service for signature completion
  */
 export const pollSafeSigningStatus = async (
-  safeAddress: string,
-  msgHash: string,
+  safeMessageHash: Hash,
   chainId: number,
-  maxAttempts: number = 60, // 5 minutes at 5 second intervals
-  interval: number = 5000
+  threshold: number,
 ): Promise<{
+  signature?: Hash
   isComplete: boolean
   confirmations: number
   threshold: number
@@ -45,50 +45,51 @@ export const pollSafeSigningStatus = async (
   }
  // OR  https://api.safe.global/tx-service/celo/api/v1/safes/${safeAddress}/messages
   const serviceUrl = `https://api.safe.global/tx-service/${chainName}/api/v1`
+                    //https://api.safe.global/tx-service/celo/api/v1/messages/0x3b3b57b3/
   
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    try {
-      const response = await fetch(
-        `${serviceUrl}/messages/${msgHash}/`
-      )
-      
-      if (!response.ok) {
-        // Transaction might not exist yet
-        await new Promise(resolve => setTimeout(resolve, interval))
-        continue
+
+  try {
+    const response = await fetch(
+      `${serviceUrl}/messages/${safeMessageHash}/`,
+      { headers: {
+          'Content-Type': 'application/json',
+          "Accept": "application/json",
+          // @ts-expect-error: Ignore missing env var error
+          'Authorization': `Bearer ${import.meta.env.VITE_SAFE_API_KEY || ''}`,
+        },
       }
-      
-      const tx = await response.json()
-      const confirmations = tx.confirmations?.length || 0
-    //   TODO use https://docs.safe.global/reference-sdk-protocol-kit/safe-info/getthreshold
-      const threshold = tx.confirmationsRequired || 0
-      
-      if (tx.isExecuted) {
-        return {
-          isComplete: true,
-          confirmations,
-          threshold,
-        }
-      }
-      
-      // Return progress update
+    )
+    
+    if (!response.ok) {
+      return { isComplete: false, confirmations: 0, threshold: 0, error: response.statusText }
+    }
+    
+    const tx = await response.json()
+    const confirmations = tx.confirmations?.length || 0
+    
+    if (confirmations > 0 && confirmations === threshold && tx.preparedSignature) {
       return {
-        isComplete: false,
+        isComplete: true,
         confirmations,
+        signature: tx.preparedSignature,
         threshold,
       }
-    } catch (error) {
-      console.error('Error polling SAFE status:', error)
-      await new Promise(resolve => setTimeout(resolve, interval))
     }
-  }
-  
-  return {
-    isComplete: false,
-    confirmations: 0,
-    threshold: 0,
-    error: 'Polling timeout',
-  }
+    
+    // Return progress update
+    return {
+      isComplete: false,
+      confirmations,
+      threshold,
+    }
+  } catch (error) {
+    console.error('Error polling SAFE status:', error)
+    return {
+      isComplete: false,
+      confirmations: 0,
+      threshold,
+    }
+  }  
 }
 
 /**
