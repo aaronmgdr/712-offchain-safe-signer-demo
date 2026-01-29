@@ -17,7 +17,7 @@ export interface EIP712Message {
 /**
  * Create a standard EIP712 typed data message for testing
  */
-export const createTestMessage = (chainId: number): EIP712Message => {
+export const createTestMessage = (chainId: number, message?: { content: string; timestamp: number }): EIP712Message => {
   return {
     domain: {
       name: 'SAFE Signer Demo',
@@ -38,7 +38,7 @@ export const createTestMessage = (chainId: number): EIP712Message => {
         { name: 'timestamp', type: 'uint256' },
       ],
     },
-    message: {
+    message: message ?? {
       content: 'I approve this action',
       timestamp: Math.floor(Date.now() / 1000),
     },

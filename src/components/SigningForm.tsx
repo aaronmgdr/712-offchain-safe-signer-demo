@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useSigningStore } from '../stores/signingStore'
 import { useEIP712Signing } from '../hooks/useEIP712Signing'
@@ -15,6 +15,11 @@ export const SigningForm: FC = () => {
   const [customMessage, setCustomMessage] = useState('')
   const [showMessage, setShowMessage] = useState(false)
   useSafePolling()
+
+  const message = useMemo(() => {
+    if (!chainId) return null
+    return createTestMessage(chainId, customMessage.length ? { content: customMessage, timestamp: Math.floor(Date.now() / 1000) }: undefined)
+  }, [chainId, customMessage])
 
   const resetSigningState = () => {
     setSigningInProgress(false)
@@ -41,16 +46,14 @@ export const SigningForm: FC = () => {
       </div>
     )
   }
-
-  const message = chainId ? createTestMessage(chainId) : null
+  
 
   const handleSign = async () => {
-    const messageToSign = customMessage
-      ? { content: customMessage, timestamp: Math.floor(Date.now() / 1000) }
-      : undefined
-
+    if (!message) {
+      throw new Error('chainId is undefined')
+    }
     // this is not the sig when we are signing with safe, just a placeholder
-    await signMessage(messageToSign)
+    await signMessage(message)
   }
 
   return (
@@ -85,7 +88,7 @@ export const SigningForm: FC = () => {
       <button
         onClick={() => setShowMessage(!showMessage)}
         disabled={signingInProgress}
-        style={{ marginBottom: '20px', background: '#667eea80' }}
+        style={{ marginBottom: '20px' }}
       >
         {showMessage ? 'Hide' : 'Show'} Message to Sign
       </button>
@@ -94,9 +97,10 @@ export const SigningForm: FC = () => {
         <div className="form-group">
           <label>EIP712 Message:</label>
           <textarea
+            rows={44}
+            className='full'
             readOnly
             value={formatMessageForDisplay(message)}
-            style={{ background: '#f5f5f5' }}
           />
         </div>
       )}
@@ -118,10 +122,11 @@ export const SigningForm: FC = () => {
      
 
       {signature && (
-        <div className="form-group">
+        <div className="form-group" style={{marginTop: 20}}>
           <label>Signature:</label>
           <textarea
             readOnly
+            rows={3}
             value={signature}
             style={{ background: '#f0f8ff' }}
           />

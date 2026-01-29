@@ -10,9 +10,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5ebe0 0%, #d4d9c8 100%);
   min-height: 100vh;
-  color: #333;
+  color: #3d3026;
 }
 
 #root {
@@ -25,17 +25,22 @@ body {
 }
 
 .container {
-  background: white;
+  background: #faf8f5;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(61, 48, 38, 0.15);
   padding: 40px;
   max-width: 600px;
   width: 100%;
+  border: 1px solid #e8dfd3;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
 h1 {
   margin-bottom: 30px;
-  color: #667eea;
+  color: #3d6b1f;
   text-align: center;
 }
 
@@ -47,34 +52,38 @@ label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #555;
+  color: #6b4423;
 }
 
 input, textarea, select {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #d4c4b0;
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s;
+  background: #ffffff;
 }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #8b5a3c;
 }
 
 textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 50px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
 }
+textarea.full {
+  background: #f5f5f5;
+}
 
 button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #256d51 0%, #096349 100%);
+  color: #faf8f5;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
@@ -87,7 +96,7 @@ button {
 
 button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 20px rgba(61, 107, 31, 0.3);
 }
 
 button:disabled {
@@ -105,29 +114,29 @@ button:disabled {
 }
 
 .status.connected {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: #e8f5e3;
+  color: #2d5016;
+  border: 1px solid #c5e1bc;
 }
 
 .status.disconnected {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: #f5e6e3;
+  color: #6b3026;
+  border: 1px solid #e8d0cc;
 }
 
 .status.safe {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeaa7;
+  background: #fef7eb;
+  color: #8b5a3c;
+  border: 1px solid #f5e6d3;
 }
 
 .account-info {
-  background: #f8f9fa;
+  background: #f5ede5;
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #8b5a3c;
 }
 
 .account-info p {
@@ -137,5 +146,5 @@ button:disabled {
 }
 
 .account-info strong {
-  color: #667eea;
+  color: #6b4423;
 }

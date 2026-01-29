@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useAccount, useSignTypedData,  } from 'wagmi'
 import { useSigningStore } from '../stores/signingStore'
-import { createTestMessage } from '../utils/eip712'
+import { EIP712Message } from '../utils/eip712'
 import { toast } from 'sonner'
 import { hashTypedData } from 'viem'
 
@@ -16,7 +16,7 @@ export const useEIP712Signing = () => {
  
 
   const signMessage = useCallback(
-    async (customMessage?: Record<string, unknown>) => {
+    async (message: EIP712Message) => {
       if (!address || !chainId) {
         toast.error('Wallet not connected')
         return {signature: null, messageHash: null}
@@ -25,10 +25,6 @@ export const useEIP712Signing = () => {
 
       try {
         setSigningInProgress(true)
-        const message = customMessage ? 
-          { ...createTestMessage(chainId), message: customMessage as Record<string, string | number | boolean> } :
-          createTestMessage(chainId)
-      
         const messageHash = hashTypedData(message)
         setMessageHash(messageHash)
         if (isSafe) {
