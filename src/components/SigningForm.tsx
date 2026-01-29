@@ -61,7 +61,7 @@ export const SigningForm: FC = () => {
 
       <div className="account-info">
         <p>
-          <strong>Account:</strong> {address?.slice(0, 6)}...{address?.slice(-4)}
+          <strong>Account:</strong> {address}
         </p>
         <p>
           <strong>Type:</strong> {isSafe ? 'SAFE Multisig' : 'EOA Wallet'}
@@ -91,21 +91,20 @@ export const SigningForm: FC = () => {
       {showMessage && message && (
         <>
         <div className="form-group">
-          <label>EIP712 Message:</label>
+          <h3>EIP712 Message:</h3>
           <textarea
             rows={44}
-            className='full'
             readOnly
             value={formatMessageForDisplay(message)}
           />
           {messageHash && <>
-            <label>Message Hash:</label>
+            <h3>Message Hash:</h3>
             <code className='hash'>
               {messageHash}
             </code>
           </>} 
           {safeMessageHash && <>
-            <label>Safe Message Hash: </label>
+            <h3>Safe Message Hash: </h3>
             <code className='hash'>
               {`${safeMessageHash}`}
             </code>
@@ -121,7 +120,7 @@ export const SigningForm: FC = () => {
       >
         {signingInProgress ? 'Signing...' : 'Sign with EIP712'}
       </button>
-      {signingInProgress && (
+      {signingInProgress || signature && (
         <button
             style={{marginTop: 10}}
             onClick={resetSigningState}
@@ -138,7 +137,6 @@ export const SigningForm: FC = () => {
             readOnly
             rows={3}
             value={signature}
-            style={{ background: '#f0f8ff' }}
           />
           <button
             onClick={() => onReceiveSignature({signature, messageHash: messageHash!, address: address as `0x${string}`, isSafe})}

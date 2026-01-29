@@ -8,7 +8,7 @@ export const projectId =  import.meta.env.VITE_REOWN_PROJECT_ID || ''
 const metadata = {
   name: 'EIP712 SAFE Multisig Demo',
   description: 'Demo app for signing offchain EIP712 messages with SAFE multisigs',
-  url: 'http://localhost:5173',
+  url: 'https://712-offchain-safe-signer-demo.aaron-deruvo.workers.dev',
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
 

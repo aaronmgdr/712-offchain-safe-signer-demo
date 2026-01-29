@@ -6,13 +6,6 @@ import { toast } from 'sonner'
 import Safe from '@safe-global/protocol-kit'
 import { Address, Chain, Hash } from 'viem'
 
-// General TODOS:
-// - reduce useEffect and state usage if possible
-// - handle errors more gracefully and dont clear signing data on error
-// - add an explicit button to check for signatures
-// - 
-
-// ok this gets us the correct hash. now i just need to integrate it into the app correctly
 async function getSafeMessageHashAndThreshold(messageHash: Hash, safeAddress: Address, chain: Chain) {
 
    // If SAFE, initialize Safe SDK
@@ -26,27 +19,34 @@ async function getSafeMessageHashAndThreshold(messageHash: Hash, safeAddress: Ad
     safe.getSafeMessageHash(messageHash),
     safe.getThreshold()
   ]);
-  console.info("Safe message hash:", safeMessageHash, "messageHash:", messageHash, "threshold:", threshold, chain.id);
   return { safeMessageHash: safeMessageHash as Hash, threshold };
 }
 
-
 export const useSafePolling = () => {
   const { address, chain, chainId } = useAccount()
-  const { signingInProgress, setSigningInProgress, messageHash, setSignature, setSafeMessageHash } = useSigningStore()
+  const { signingInProgress, setSigningInProgress, messageHash, setSignature, setSafeMessageHash, safeMessageHash, threshold, setThreshold } = useSigningStore()
   const [isPolling, setIsPolling] = useState(false)
-
-
-  const startPolling = useCallback(async (msgHash: Hash) => {
-    if (!address || !chainId || !chain) return
+  
+  useEffect(() => {
+    async function fetchSafeData() {
+      if (!address || !chain || !messageHash) return  
+        const { safeMessageHash, threshold } = await getSafeMessageHashAndThreshold(messageHash, address as Address, chain);
+        setSafeMessageHash(safeMessageHash)
+        setThreshold(threshold)
+        return { safeMessageHash, threshold }
+    }
+    fetchSafeData()
+  }, [messageHash, address, chain])
+  
+  const startPolling = useCallback(() => {
+    // returns an empty cleanup function if we can't poll
+    if (!address || !chainId || !chain || !safeMessageHash) return () => {}
     setIsPolling(true)
     
-    const { safeMessageHash, threshold } = await getSafeMessageHashAndThreshold(msgHash, address as Address, chain);
     const toastId = toast.loading(
       `Waiting for SAFE multisig approval... (0 of ${threshold} signatures)`
     )
 
-    setSafeMessageHash(safeMessageHash)
 
     try {
       // Simulate polling - in production, integrate real polling
@@ -89,6 +89,10 @@ export const useSafePolling = () => {
           console.error('Polling error:', error)
         }
       }, frequency)
+      return () => {
+        clearInterval(pollInterval)
+        toast.dismiss(toastId)
+      }
     } catch (error) {
       setIsPolling(false)
       setSigningInProgress(false)
@@ -96,15 +100,20 @@ export const useSafePolling = () => {
             id: toastId,
           })
       console.error('Polling error:', error)
+      return () => {
+        toast.dismiss(toastId)
+      }
     }
-  }, [address, chainId, setSigningInProgress])
+
+  }, [address, chainId, setSigningInProgress, safeMessageHash, messageHash, threshold])
 
 
   useEffect(() => {
-    if (signingInProgress && messageHash) {
-      startPolling(messageHash)
+    if (signingInProgress) {
+      // return cleanup function on unmount
+      return startPolling()
     }
-  }, [signingInProgress, startPolling,messageHash])
+  }, [signingInProgress, startPolling])
 
   return {
     startPolling,

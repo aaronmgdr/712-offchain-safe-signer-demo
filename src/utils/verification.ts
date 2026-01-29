@@ -31,13 +31,11 @@ export const verifyERC1271Signature = async (
       abi: SAFE_ERC1271_ABI,
       client: { public: publicClient },
     })
-    console.info('Verifying ERC-1271 signature with params:', { messageHash, signature, safeAddress })
     // Call isValidSignature on SAFE
     const result = await safeContract.read.isValidSignature(
       [messageHash as `0x${string}`, signature as `0x${string}`],
       { account: safeAddress as `0x${string}` }
     )
-    console.info('ERC-1271 verification result:', result)
     // ERC-1271 magic values for valid signatures:
     // 0x1626ba7e - newer standard: isValidSignature(bytes32,bytes)
     // 0x20c13b0b - current standard: isValidSignature(bytes,bytes)

@@ -91,12 +91,3 @@ export const pollSafeSigningStatus = async (
     }
   }  
 }
-
-/**
- * Construct SAFE transaction service URL
- */
-export const getSafeServiceUrl = (chainId: number): string => {
-  
-  const chainName = chainIdMap[chainId] || 'celo'
-  return `https://safe-transaction-${chainName}.safe.global`
-}

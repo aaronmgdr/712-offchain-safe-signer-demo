@@ -19,13 +19,6 @@ export async function onReceiveSignature({signature, messageHash, address, isSaf
       const isValid = isSafe
         ? await verifyERC1271Signature(address, messageHash, signature)
         : await verifyECDSASignature(messageHash, signature, address)
-       console.info('Verifying signature with params:', {
-        signature,
-        messageHash,
-        address,
-        isSafe,
-        isValid
-      })
 
 
       if (isValid) {
