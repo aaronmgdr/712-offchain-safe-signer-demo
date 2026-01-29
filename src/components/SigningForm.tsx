@@ -59,14 +59,15 @@ export const SigningForm: FC = () => {
         </div>
       )}
 
-      <div className="account-info">
-        <p>
-          <strong>Account:</strong> {address}
-        </p>
-        <p>
-          <strong>Type:</strong> {isSafe ? 'SAFE Multisig' : 'EOA Wallet'}
-        </p>
-      </div>
+      <section className="account-info">
+        <h2>Account Information</h2>
+        <dl>
+          <dt>Account:</dt>
+          <dd>{address}</dd>
+          <dt>Type:</dt>
+          <dd>{isSafe ? 'SAFE Multisig' : 'EOA Wallet'}</dd>
+        </dl>
+      </section>
 
       <div className="form-group">
         <label htmlFor="custom-message">Custom Message (optional)</label>
@@ -91,20 +92,20 @@ export const SigningForm: FC = () => {
       {showMessage && message && (
         <>
         <div className="form-group">
-          <h3>EIP712 Message:</h3>
+          <h2>EIP712 Message:</h2>
           <textarea
             rows={44}
             readOnly
             value={formatMessageForDisplay(message)}
           />
           {messageHash && <>
-            <h3>Message Hash:</h3>
+            <h2>Message Hash:</h2>
             <code className='hash'>
               {messageHash}
             </code>
           </>} 
           {safeMessageHash && <>
-            <h3>Safe Message Hash: </h3>
+            <h2>Safe Message Hash: </h2>
             <code className='hash'>
               {`${safeMessageHash}`}
             </code>
@@ -131,12 +132,13 @@ export const SigningForm: FC = () => {
      
 
       {signature && (
-        <div className="form-group" style={{marginTop: 20}}>
-          <label>Signature:</label>
+        <section className="form-group" style={{marginTop: 20}}>
+          <h2>Signature</h2>
           <textarea
             readOnly
             rows={3}
             value={signature}
+            aria-label="Generated signature"
           />
           <button
             onClick={() => onReceiveSignature({signature, messageHash: messageHash!, address: address as `0x${string}`, isSafe})}
@@ -144,7 +146,7 @@ export const SigningForm: FC = () => {
           >
             Verify Signature
           </button>
-        </div>
+        </section>
       )}
     </>
   )
