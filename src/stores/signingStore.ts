@@ -10,6 +10,7 @@ export interface SigningState {
   setSafeMessageHash: (hash: Hash | null) => void
   setMessageHash: (hash: Hash | null) => void
   setSignature: (hash: Hash | null) => void
+  resetSigningState: () => void
   setSigningInProgress: (inProgress: boolean) => void
   setIsSafe: (isSafe: boolean) => void
 }
@@ -17,6 +18,14 @@ export interface SigningState {
 export const useSigningStore = create<SigningState>()(
   persist(
     (set) => ({
+      resetSigningState() {
+        set({
+          messageHash: null,
+          safeMessageHash: null,
+          signingInProgress: false,
+          signature: null,
+        })
+      },
       messageHash: null,
       safeMessageHash: null,
       signingInProgress: false,
@@ -24,7 +33,7 @@ export const useSigningStore = create<SigningState>()(
       signature: null,
       setSafeMessageHash: (hash: Hash | null) => set({ safeMessageHash: hash }),
       setMessageHash: (hash) => set({ messageHash: hash }),
-      setSignature: (sig) => set({ signature: sig, signingInProgress: sig ? false : true }),
+      setSignature: (sig) => set({ signature: sig, signingInProgress: false }),
       setSigningInProgress: (inProgress) => set({ signingInProgress: inProgress }),
       setIsSafe: (isSafe) => set({ isSafe }),
     }),

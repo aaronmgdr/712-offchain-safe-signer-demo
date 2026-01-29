@@ -9,7 +9,7 @@ import { onReceiveSignature } from '../utils/onReceiveSignature'
 
 export const SigningForm: FC = () => {
   const { address, chainId, isConnected } = useAccount()
-  const { isSafe, signingInProgress, messageHash, safeMessageHash, setMessageHash, setSigningInProgress, signature, setSignature } = useSigningStore()
+  const { isSafe, signingInProgress, messageHash, safeMessageHash, signature, resetSigningState } = useSigningStore()
   const { signMessage } = useEIP712Signing()
   const { isChecking } = useWalletInfo()
   const [customMessage, setCustomMessage] = useState('')
@@ -21,11 +21,6 @@ export const SigningForm: FC = () => {
     return createTestMessage(chainId, customMessage.length ? { content: customMessage, timestamp: Math.floor(Date.now() / 1000) }: undefined)
   }, [chainId, customMessage])
 
-  const resetSigningState = () => {
-    setSigningInProgress(false)
-    setMessageHash(null)
-    setSignature(null)
-  }
 
   if (!isConnected) {
     return (
@@ -94,6 +89,7 @@ export const SigningForm: FC = () => {
       </button>
 
       {showMessage && message && (
+        <>
         <div className="form-group">
           <label>EIP712 Message:</label>
           <textarea
@@ -102,7 +98,21 @@ export const SigningForm: FC = () => {
             readOnly
             value={formatMessageForDisplay(message)}
           />
+          {messageHash && <>
+            <label>Message Hash:</label>
+            <code className='hash'>
+              {messageHash}
+            </code>
+          </>} 
+          {safeMessageHash && <>
+            <label>Safe Message Hash: </label>
+            <code className='hash'>
+              {`${safeMessageHash}`}
+            </code>
+          </>}
         </div>
+        
+        </>
       )}
 
       <button
@@ -136,10 +146,6 @@ export const SigningForm: FC = () => {
           >
             Verify Signature
           </button>
-          <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-            {messageHash && `Message Hash: ${messageHash}`}
-            {safeMessageHash && `Safe Message Hash: ${safeMessageHash}`}
-          </p>
         </div>
       )}
     </>
