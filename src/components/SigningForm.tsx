@@ -1,20 +1,19 @@
 import { FC, useMemo, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useSigningStore } from '../stores/signingStore'
-import { useEIP712Signing } from '../hooks/useEIP712Signing'
+import { useSafeStore } from '../stores/safeStore'
+import { useSigning } from '../signing/useSigning'
 import { useWalletInfo } from '../hooks/useWalletInfo'
 import { createTestMessage, formatMessageForDisplay } from '../utils/eip712'
-import { useSafePolling } from '../hooks/useSafePolling'
-import { onReceiveSignature } from '../utils/onReceiveSignature'
 
 export const SigningForm: FC = () => {
   const { address, chainId, isConnected } = useAccount()
-  const { isSafe, signingInProgress, messageHash, safeMessageHash, signature, resetSigningState } = useSigningStore()
-  const { signMessage } = useEIP712Signing()
+  const { signingInProgress, messageHash, signature, resetSigningState } = useSigningStore()
+  const { isSafe, safeMessageHash } = useSafeStore()
+  const { signMessage, verifySignature } = useSigning()
   const { isChecking } = useWalletInfo()
   const [customMessage, setCustomMessage] = useState('')
   const [showMessage, setShowMessage] = useState(false)
-  useSafePolling()
 
   const message = useMemo(() => {
     if (!chainId) return null
@@ -141,7 +140,7 @@ export const SigningForm: FC = () => {
             aria-label="Generated signature"
           />
           <button
-            onClick={() => onReceiveSignature({signature, messageHash: messageHash!, address: address as `0x${string}`, isSafe})}
+            onClick={verifySignature}
             style={{ marginTop: '10px' }}
           >
             Verify Signature

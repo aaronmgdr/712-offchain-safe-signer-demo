@@ -1,12 +1,15 @@
 import { useAccount } from 'wagmi'
-import { useSigningStore } from '../stores/signingStore'
-import { detectSafeWallet } from '../utils/safe'
+import { useSafeStore } from '../stores/safeStore'
+import { detectSafeWallet } from '../signing/common/walletDetection'
 import { useEffect, useState } from 'react'
 
+/**
+ * Wallet information hook
+ * Detects wallet type (Safe vs EOA) on connection
+ */
 export const useWalletInfo = () => {
   const { address, isConnected } = useAccount()
-  
-  const { setIsSafe } = useSigningStore()
+  const { setIsSafe } = useSafeStore()
   const [isChecking, setIsChecking] = useState(false)
 
   useEffect(() => {
@@ -21,7 +24,7 @@ export const useWalletInfo = () => {
         const isSafe = await detectSafeWallet(address)
         setIsSafe(isSafe)
       } catch (error) {
-        console.error('Error checking SAFE wallet:', error)
+        console.error('Error checking Safe wallet:', error)
         setIsSafe(false)
       } finally {
         setIsChecking(false)
