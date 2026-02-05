@@ -1,51 +1,53 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Hash } from 'viem'
+
+/**
+ * Generic signing state store
+ * Contains state that applies to both EOA and Safe wallet signing
+ *
+ * For Safe-specific state (safeMessageHash, threshold, etc.),
+ * see stores/safeStore.ts
+ */
 export interface SigningState {
+  /** EIP712 message hash (standard, not Safe-wrapped) */
   messageHash: Hash | null
-  safeMessageHash: Hash | null
-  signingInProgress: boolean
-  isSafe: boolean
-  threshold: number
+  /** The signature result (from either EOA or Safe) */
   signature: Hash | null
-  setSafeMessageHash: (hash: Hash | null) => void
+  /** Whether a signing operation is currently in progress */
+  signingInProgress: boolean
+
+  // Setters
   setMessageHash: (hash: Hash | null) => void
   setSignature: (hash: Hash | null) => void
-  resetSigningState: () => void
   setSigningInProgress: (inProgress: boolean) => void
-  setIsSafe: (isSafe: boolean) => void
-  setThreshold: (threshold: number) => void
+  resetSigningState: () => void
 }
 
 export const useSigningStore = create<SigningState>()(
   persist(
     (set) => ({
-      resetSigningState() {
-        set({
-          messageHash: null,
-          safeMessageHash: null,
-          signingInProgress: false,
-          signature: null,
-        })
-      },
-      threshold: 0,
+      // Initial state
       messageHash: null,
-      safeMessageHash: null,
-      signingInProgress: false,
-      isSafe: false,
       signature: null,
-      setThreshold(threshold) {
-        set({ threshold })
-      },
-      setSafeMessageHash: (hash: Hash | null) => set({ safeMessageHash: hash }),
+      signingInProgress: false,
+
+      // Setters
       setMessageHash: (hash) => set({ messageHash: hash }),
       setSignature: (sig) => set({ signature: sig, signingInProgress: false }),
       setSigningInProgress: (inProgress) => set({ signingInProgress: inProgress }),
-      setIsSafe: (isSafe) => set({ isSafe }),
+
+      resetSigningState() {
+        set({
+          messageHash: null,
+          signature: null,
+          signingInProgress: false,
+        })
+      },
     }),
     {
       name: 'eip712-signing-store',
-      version: 1,
+      version: 2, // Increment version to trigger migration
     }
   )
 )
